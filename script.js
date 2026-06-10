@@ -43,7 +43,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   showSlide(0);
 
   music.play().then(() => {
-    startBeatSync();
+    startSongSync();
   }).catch(() => {
     // No music file / autoplay blocked -> fall back to fixed interval
     startFixedTimer();
@@ -79,57 +79,30 @@ function startFixedTimer() {
   }, step);
 }
 
-// ── Beat-synced auto-advance using Web Audio API ──
-function startBeatSync() {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    const ctx = new AudioCtx();
-    const source = ctx.createMediaElementSource(music);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 1024;
-    source.connect(analyser);
-    analyser.connect(ctx.destination);
+// ── Song-synced auto-advance: spread all photos evenly across the song's duration ──
+function startSongSync() {
+  clearInterval(autoTimer);
 
-    const bufferLength = analyser.frequencyBinCount;
-    const data = new Uint8Array(bufferLength);
+  const beginTimer = () => {
+    const duration = music.duration && isFinite(music.duration) ? music.duration : (FALLBACK_INTERVAL * photos.length / 1000);
+    const interval = (duration * 1000) / photos.length; // ms per photo, so all photos fit in one play-through
 
-    // energy history for adaptive threshold (~last 1.5s @ 60fps)
-    const historySize = 90;
-    const energyHistory = [];
-    let lastBeatTime = 0;
-    const minBeatInterval = 280; // ms, prevents double-triggering (~max 214 BPM)
-
-    function tick() {
-      requestAnimationFrame(tick);
-      analyser.getByteFrequencyData(data);
-
-      // focus on bass/low-mid frequencies (beat energy)
-      let sum = 0;
-      const bassBins = Math.floor(bufferLength * 0.15);
-      for (let i = 0; i < bassBins; i++) sum += data[i] * data[i];
-      const energy = sum / bassBins;
-
-      energyHistory.push(energy);
-      if (energyHistory.length > historySize) energyHistory.shift();
-
-      const avg = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
-      const now = performance.now();
-
-      if (energy > avg * 1.35 && energy > 5 && (now - lastBeatTime) > minBeatInterval) {
-        lastBeatTime = now;
+    let elapsed = 0;
+    const step = 50;
+    autoTimer = setInterval(() => {
+      elapsed += step;
+      progressBar.style.width = `${(elapsed / interval) * 100}%`;
+      if (elapsed >= interval) {
+        elapsed = 0;
         showSlide(current + 1);
-        progressBar.style.width = '100%';
-        progressBar.style.transition = 'none';
-        requestAnimationFrame(() => {
-          progressBar.style.transition = `width ${minBeatInterval * 1.5}ms linear`;
-          progressBar.style.width = '0%';
-        });
       }
-    }
-    tick();
-  } catch (e) {
-    console.warn('Beat sync unavailable, using fixed timer', e);
-    startFixedTimer();
+    }, step);
+  };
+
+  if (music.duration && isFinite(music.duration)) {
+    beginTimer();
+  } else {
+    music.addEventListener('loadedmetadata', beginTimer, { once: true });
   }
 }
 
