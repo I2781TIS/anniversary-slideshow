@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>25 שנות אהבה ❤️</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="intro-screen">
+    <div class="intro-content">
+      <h1>Zohar</h1>
+      <p>25 שנות נישואין ❤️</p>
+      <button id="start-btn">התחל</button>
+      <div class="sponsor">
+        <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" rx="22" fill="#1a1a1a"/>
+          <defs>
+            <linearGradient id="og" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffb300"/>
+              <stop offset="100%" stop-color="#ff5e00"/>
+            </linearGradient>
+          </defs>
+          <!-- חץ ראשון >> -->
+          <polyline points="15,30 35,50 15,70" fill="none" stroke="url(#og)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="38,30 58,50 38,70" fill="none" stroke="url(#og)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Sponsored by <strong>NxtMove.gg</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="slideshow-screen" class="hidden">
+    <div id="year-banner"></div>
+    <div id="location-banner"></div>
+
+    <div id="slide-container">
+      <img id="slide-img" src="" alt="" />
+    </div>
+
+    <div id="controls">
+      <button id="prev-btn">&#8592;</button>
+      <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+      <button id="next-btn">&#8594;</button>
+    </div>
+
+    <div id="counter"></div>
+  </div>
+
+  <audio id="bg-music" loop>
+    <!-- הוסף כאן: <source src="music.mp3" type="audio/mpeg" /> -->
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

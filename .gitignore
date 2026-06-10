@@ -1,0 +1,11 @@
+credentials.json
+token.json
+__pycache__/
+*.pyc
+
+# Raw/unfiltered photo data - too large and contains photos of others
+photos_raw/
+photos/
+reference_faces/
+filter_log.txt
+data.json
