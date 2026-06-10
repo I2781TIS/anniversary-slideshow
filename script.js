@@ -4,6 +4,7 @@ let autoTimer = null;
 const FALLBACK_INTERVAL = 4000; // used if no music / beat detection unavailable
 
 const introScreen    = document.getElementById('intro-screen');
+const greetingScreen = document.getElementById('greeting-screen');
 const slideshowScreen= document.getElementById('slideshow-screen');
 const slideImg       = document.getElementById('slide-img');
 const progressBar    = document.getElementById('progress-bar');
@@ -38,6 +39,12 @@ document.getElementById('start-btn').addEventListener('click', () => {
     return;
   }
   introScreen.classList.add('hidden');
+  greetingScreen.classList.remove('hidden');
+});
+
+// ── Continue from greeting to slideshow ──
+document.getElementById('continue-btn').addEventListener('click', () => {
+  greetingScreen.classList.add('hidden');
   slideshowScreen.classList.remove('hidden');
   spawnParticles();
   showSlide(0);
