@@ -94,6 +94,17 @@ body {
   color: #f59e0b;
 }
 
+/* ─── SLIDESHOW FOOTER SPONSOR ─── */
+.sponsor-footer {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.5rem;
+  margin-top: 0;
+  z-index: 10;
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+
 /* ─── SLIDESHOW SCREEN ─── */
 #slideshow-screen {
   position: fixed;
