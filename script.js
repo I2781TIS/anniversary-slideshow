@@ -1,41 +1,53 @@
 let photos = [];
 let current = 0;
 let autoTimer = null;
-const AUTO_INTERVAL = 5000;
+const FALLBACK_INTERVAL = 4000; // used if no music / beat detection unavailable
 
 const introScreen    = document.getElementById('intro-screen');
 const slideshowScreen= document.getElementById('slideshow-screen');
-const yearBanner     = document.getElementById('year-banner');
-const locationBanner = document.getElementById('location-banner');
 const slideImg       = document.getElementById('slide-img');
 const progressBar    = document.getElementById('progress-bar');
 const counter        = document.getElementById('counter');
 const music          = document.getElementById('bg-music');
 
+// ── Shuffle helper (Fisher-Yates) ──
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // ── Load data ──
 fetch('data_filtered.json').catch(() => fetch('data.json'))
   .then(r => r.json())
   .then(data => {
-    photos = data.sort((a, b) => (a.date || a.year) < (b.date || b.year) ? -1 : 1);
-    console.log(`Loaded ${photos.length} photos`);
+    photos = shuffle(data.slice());
+    console.log(`Loaded ${photos.length} photos (shuffled)`);
   })
   .catch(() => {
     photos = [];
-    console.warn('data.json not found — run fetch_photos.py first');
+    console.warn('data not found');
   });
 
 // ── Start button ──
 document.getElementById('start-btn').addEventListener('click', () => {
   if (photos.length === 0) {
-    alert('לא נמצאו תמונות. הרץ את fetch_photos.py תחילה.');
+    alert('לא נמצאו תמונות.');
     return;
   }
   introScreen.classList.add('hidden');
   slideshowScreen.classList.remove('hidden');
   spawnParticles();
   showSlide(0);
-  startAuto();
-  if (music.querySelector('source')) music.play().catch(() => {});
+
+  music.play().then(() => {
+    startBeatSync();
+  }).catch(() => {
+    // No music file / autoplay blocked -> fall back to fixed interval
+    startFixedTimer();
+  });
 });
 
 // ── Show slide ──
@@ -47,53 +59,92 @@ function showSlide(index) {
   setTimeout(() => {
     slideImg.src = `photos_filtered/${photo.file}`;
     slideshowScreen.style.setProperty('--bg-src', `url('photos_filtered/${photo.file}')`);
-    yearBanner.textContent = photo.year;
-    locationBanner.textContent = photo.location ? `📍 ${formatLocation(photo.location)}` : '';
     counter.textContent = `${current + 1} / ${photos.length}`;
     slideImg.classList.remove('fade-out');
   }, 600);
-
-  updateProgress();
 }
 
-function formatLocation(loc) {
-  if (!loc || !loc.includes(',')) return loc;
-  return loc; // lat,lng — replace with reverse geocoding if desired
-}
-
-// ── Auto-advance ──
-function startAuto() {
+// ── Fallback fixed-interval auto-advance (no music) ──
+function startFixedTimer() {
   clearInterval(autoTimer);
   let elapsed = 0;
   const step = 100;
   autoTimer = setInterval(() => {
     elapsed += step;
-    progressBar.style.width = `${(elapsed / AUTO_INTERVAL) * 100}%`;
-    if (elapsed >= AUTO_INTERVAL) {
+    progressBar.style.width = `${(elapsed / FALLBACK_INTERVAL) * 100}%`;
+    if (elapsed >= FALLBACK_INTERVAL) {
       elapsed = 0;
       showSlide(current + 1);
     }
   }, step);
 }
 
-function updateProgress() {
-  progressBar.style.width = '0%';
+// ── Beat-synced auto-advance using Web Audio API ──
+function startBeatSync() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    const source = ctx.createMediaElementSource(music);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 1024;
+    source.connect(analyser);
+    analyser.connect(ctx.destination);
+
+    const bufferLength = analyser.frequencyBinCount;
+    const data = new Uint8Array(bufferLength);
+
+    // energy history for adaptive threshold (~last 1.5s @ 60fps)
+    const historySize = 90;
+    const energyHistory = [];
+    let lastBeatTime = 0;
+    const minBeatInterval = 280; // ms, prevents double-triggering (~max 214 BPM)
+
+    function tick() {
+      requestAnimationFrame(tick);
+      analyser.getByteFrequencyData(data);
+
+      // focus on bass/low-mid frequencies (beat energy)
+      let sum = 0;
+      const bassBins = Math.floor(bufferLength * 0.15);
+      for (let i = 0; i < bassBins; i++) sum += data[i] * data[i];
+      const energy = sum / bassBins;
+
+      energyHistory.push(energy);
+      if (energyHistory.length > historySize) energyHistory.shift();
+
+      const avg = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
+      const now = performance.now();
+
+      if (energy > avg * 1.35 && energy > 5 && (now - lastBeatTime) > minBeatInterval) {
+        lastBeatTime = now;
+        showSlide(current + 1);
+        progressBar.style.width = '100%';
+        progressBar.style.transition = 'none';
+        requestAnimationFrame(() => {
+          progressBar.style.transition = `width ${minBeatInterval * 1.5}ms linear`;
+          progressBar.style.width = '0%';
+        });
+      }
+    }
+    tick();
+  } catch (e) {
+    console.warn('Beat sync unavailable, using fixed timer', e);
+    startFixedTimer();
+  }
 }
 
 // ── Controls ──
 document.getElementById('prev-btn').addEventListener('click', () => {
   showSlide(current - 1);
-  startAuto();
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
   showSlide(current + 1);
-  startAuto();
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') { showSlide(current + 1); startAuto(); }
-  if (e.key === 'ArrowLeft')  { showSlide(current - 1); startAuto(); }
+  if (e.key === 'ArrowRight') showSlide(current + 1);
+  if (e.key === 'ArrowLeft')  showSlide(current - 1);
 });
 
 // ── Particles ──
