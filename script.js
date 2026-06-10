@@ -45,8 +45,8 @@ function showSlide(index) {
 
   slideImg.classList.add('fade-out');
   setTimeout(() => {
-    slideImg.src = `photos/${photo.file}`;
-    slideshowScreen.style.setProperty('--bg-src', `url('photos/${photo.file}')`);
+    slideImg.src = `photos_filtered/${photo.file}`;
+    slideshowScreen.style.setProperty('--bg-src', `url('photos_filtered/${photo.file}')`);
     yearBanner.textContent = photo.year;
     locationBanner.textContent = photo.location ? `📍 ${formatLocation(photo.location)}` : '';
     counter.textContent = `${current + 1} / ${photos.length}`;
