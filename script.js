@@ -116,6 +116,7 @@ function showEndScreen() {
   clearInterval(autoTimer);
   progressBar.style.width = '0%';
   endScreen.classList.remove('hidden');
+  music.pause();
 }
 
 // ── Controls ──
