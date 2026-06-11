@@ -89,7 +89,6 @@ function startFixedTimer() {
 
 // ── Auto-advance at a fixed pace per photo ──
 const PHOTO_INTERVAL = 500; // ms per photo
-const END_SCREEN_DURATION = 6000; // ms to show the closing credit
 
 function startSongSync() {
   clearInterval(autoTimer);
@@ -117,12 +116,6 @@ function showEndScreen() {
   clearInterval(autoTimer);
   progressBar.style.width = '0%';
   endScreen.classList.remove('hidden');
-
-  setTimeout(() => {
-    endScreen.classList.add('hidden');
-    showSlide(0);
-    startSongSync();
-  }, END_SCREEN_DURATION);
 }
 
 // ── Controls ──
