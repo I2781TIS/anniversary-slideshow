@@ -86,31 +86,22 @@ function startFixedTimer() {
   }, step);
 }
 
-// ── Song-synced auto-advance: spread all photos evenly across the song's duration ──
+// ── Auto-advance at a fixed pace per photo ──
+const PHOTO_INTERVAL = 500; // ms per photo
+
 function startSongSync() {
   clearInterval(autoTimer);
 
-  const beginTimer = () => {
-    const duration = music.duration && isFinite(music.duration) ? music.duration : (FALLBACK_INTERVAL * photos.length / 1000);
-    const interval = (duration * 1000) / photos.length; // ms per photo, so all photos fit in one play-through
-
-    let elapsed = 0;
-    const step = 50;
-    autoTimer = setInterval(() => {
-      elapsed += step;
-      progressBar.style.width = `${(elapsed / interval) * 100}%`;
-      if (elapsed >= interval) {
-        elapsed = 0;
-        showSlide(current + 1);
-      }
-    }, step);
-  };
-
-  if (music.duration && isFinite(music.duration)) {
-    beginTimer();
-  } else {
-    music.addEventListener('loadedmetadata', beginTimer, { once: true });
-  }
+  let elapsed = 0;
+  const step = 50;
+  autoTimer = setInterval(() => {
+    elapsed += step;
+    progressBar.style.width = `${(elapsed / PHOTO_INTERVAL) * 100}%`;
+    if (elapsed >= PHOTO_INTERVAL) {
+      elapsed = 0;
+      showSlide(current + 1);
+    }
+  }, step);
 }
 
 // ── Controls ──
