@@ -10,6 +10,7 @@ const slideImg       = document.getElementById('slide-img');
 const progressBar    = document.getElementById('progress-bar');
 const counter        = document.getElementById('counter');
 const music          = document.getElementById('bg-music');
+const endScreen      = document.getElementById('end-screen');
 
 // ── Shuffle helper (Fisher-Yates) ──
 function shuffle(arr) {
@@ -88,6 +89,7 @@ function startFixedTimer() {
 
 // ── Auto-advance at a fixed pace per photo ──
 const PHOTO_INTERVAL = 500; // ms per photo
+const END_SCREEN_DURATION = 6000; // ms to show the closing credit
 
 function startSongSync() {
   clearInterval(autoTimer);
@@ -99,9 +101,28 @@ function startSongSync() {
     progressBar.style.width = `${(elapsed / PHOTO_INTERVAL) * 100}%`;
     if (elapsed >= PHOTO_INTERVAL) {
       elapsed = 0;
+
+      if (current === photos.length - 1) {
+        showEndScreen();
+        return;
+      }
+
       showSlide(current + 1);
     }
   }, step);
+}
+
+// ── End screen ──
+function showEndScreen() {
+  clearInterval(autoTimer);
+  progressBar.style.width = '0%';
+  endScreen.classList.remove('hidden');
+
+  setTimeout(() => {
+    endScreen.classList.add('hidden');
+    showSlide(0);
+    startSongSync();
+  }, END_SCREEN_DURATION);
 }
 
 // ── Controls ──

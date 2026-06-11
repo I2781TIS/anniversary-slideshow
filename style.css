@@ -94,6 +94,31 @@ body {
   color: #f59e0b;
 }
 
+/* ─── END SCREEN ─── */
+#end-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  background: rgba(15, 17, 23, 0.85);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+#end-screen.hidden { display: none; }
+
+#end-screen p {
+  font-size: clamp(1.8rem, 6vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* ─── SLIDESHOW FOOTER SPONSOR ─── */
 .sponsor-footer {
   position: absolute;
