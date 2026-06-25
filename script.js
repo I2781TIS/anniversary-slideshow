@@ -140,23 +140,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  navigate(-1);
 });
 
-// ── Touch swipe navigation ──
-let touchStartX = 0;
-let touchStartY = 0;
-
-slideshowScreen.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
-slideshowScreen.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-  if (Math.abs(dx) > 50 && Math.abs(dx) > dy) {
-    navigate(dx < 0 ? 1 : -1); // swipe left = next, swipe right = prev
-  }
-}, { passive: true });
-
 // ── Particles ──
 function spawnParticles() {
   for (let i = 0; i < 18; i++) {

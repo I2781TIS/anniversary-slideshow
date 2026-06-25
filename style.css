@@ -276,6 +276,7 @@ body {
   justify-content: center;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
 }
 
 #slide-img {
@@ -284,12 +285,11 @@ body {
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 30px 80px rgba(0,0,0,0.8);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease;
 }
 
 #slide-img.fade-out {
   opacity: 0;
-  transform: scale(0.97);
 }
 
 /* ─── CONTROLS ─── */
