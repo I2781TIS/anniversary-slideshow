@@ -1,6 +1,7 @@
 let photos = [];
 let current = 0;
 let autoTimer = null;
+let restartTimer = null; // fn to restart whichever timer mode is active
 const FALLBACK_INTERVAL = 4000; // used if no music / beat detection unavailable
 
 const introScreen    = document.getElementById('intro-screen');
@@ -63,52 +64,58 @@ function showSlide(index) {
   current = (index + photos.length) % photos.length;
   const photo = photos[current];
 
+  counter.textContent = `${current + 1} / ${photos.length}`; // update immediately, not inside the fade timeout
+
   slideImg.classList.add('fade-out');
   setTimeout(() => {
     slideImg.src = `photos_filtered/${photo.file}`;
     slideshowScreen.style.setProperty('--bg-src', `url('photos_filtered/${photo.file}')`);
-    counter.textContent = `${current + 1} / ${photos.length}`;
     slideImg.classList.remove('fade-out');
   }, 600);
 }
 
 // ── Fallback fixed-interval auto-advance (no music) ──
 function startFixedTimer() {
-  clearInterval(autoTimer);
-  let elapsed = 0;
-  const step = 100;
-  autoTimer = setInterval(() => {
-    elapsed += step;
-    progressBar.style.width = `${(elapsed / FALLBACK_INTERVAL) * 100}%`;
-    if (elapsed >= FALLBACK_INTERVAL) {
-      elapsed = 0;
-      showSlide(current + 1);
-    }
-  }, step);
+  const run = () => {
+    clearInterval(autoTimer);
+    let elapsed = 0;
+    const step = 100;
+    autoTimer = setInterval(() => {
+      elapsed += step;
+      progressBar.style.width = `${(elapsed / FALLBACK_INTERVAL) * 100}%`;
+      if (elapsed >= FALLBACK_INTERVAL) {
+        elapsed = 0;
+        showSlide(current + 1);
+      }
+    }, step);
+  };
+  restartTimer = run;
+  run();
 }
 
 // ── Auto-advance at a fixed pace per photo ──
 const PHOTO_INTERVAL = 500; // ms per photo
 
 function startSongSync() {
-  clearInterval(autoTimer);
-
-  let elapsed = 0;
-  const step = 50;
-  autoTimer = setInterval(() => {
-    elapsed += step;
-    progressBar.style.width = `${(elapsed / PHOTO_INTERVAL) * 100}%`;
-    if (elapsed >= PHOTO_INTERVAL) {
-      elapsed = 0;
-
-      if (current === photos.length - 1) {
-        showEndScreen();
-        return;
+  const run = () => {
+    clearInterval(autoTimer);
+    let elapsed = 0;
+    const step = 50;
+    autoTimer = setInterval(() => {
+      elapsed += step;
+      progressBar.style.width = `${(elapsed / PHOTO_INTERVAL) * 100}%`;
+      if (elapsed >= PHOTO_INTERVAL) {
+        elapsed = 0;
+        if (current === photos.length - 1) {
+          showEndScreen();
+          return;
+        }
+        showSlide(current + 1);
       }
-
-      showSlide(current + 1);
-    }
-  }, step);
+    }, step);
+  };
+  restartTimer = run;
+  run();
 }
 
 // ── End screen ──
@@ -120,17 +127,17 @@ function showEndScreen() {
 }
 
 // ── Controls ──
-document.getElementById('prev-btn').addEventListener('click', () => {
-  showSlide(current - 1);
-});
+function navigate(delta) {
+  showSlide(current + delta);
+  if (restartTimer) restartTimer();
+}
 
-document.getElementById('next-btn').addEventListener('click', () => {
-  showSlide(current + 1);
-});
+document.getElementById('prev-btn').addEventListener('click', () => navigate(-1));
+document.getElementById('next-btn').addEventListener('click', () => navigate(1));
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') showSlide(current + 1);
-  if (e.key === 'ArrowLeft')  showSlide(current - 1);
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'ArrowLeft')  navigate(-1);
 });
 
 // ── Particles ──
