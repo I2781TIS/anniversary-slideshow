@@ -10,7 +10,9 @@ body {
   font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
   height: 100vh;
+  height: 100dvh; /* iOS 15.4+ / modern browsers: excludes browser chrome */
   width: 100vw;
+  overscroll-behavior: none; /* prevent pull-to-refresh in slideshow */
 }
 
 /* ─── INTRO SCREEN ─── */
@@ -72,9 +74,11 @@ body {
   text-transform: uppercase;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+  touch-action: manipulation; /* faster tap response, no double-tap zoom */
+  -webkit-tap-highlight-color: transparent;
 }
 
-#start-btn:hover {
+#start-btn:hover, #start-btn:active {
   transform: scale(1.06);
   box-shadow: 0 0 50px rgba(59, 130, 246, 0.7);
 }
@@ -122,8 +126,8 @@ body {
 /* ─── SLIDESHOW FOOTER SPONSOR ─── */
 .sponsor-footer {
   position: absolute;
-  bottom: 1rem;
-  left: 1.5rem;
+  bottom: max(1rem, calc(0.5rem + env(safe-area-inset-bottom)));
+  left: max(1.5rem, calc(1rem + env(safe-area-inset-left)));
   margin-top: 0;
   z-index: 10;
   font-size: 0.7rem;
@@ -139,8 +143,11 @@ body {
   justify-content: center;
   background: radial-gradient(ellipse at center, #1a2744 0%, #0f1117 70%);
   z-index: 100;
-  overflow-y: auto;
+  overflow-y: scroll; /* scroll (not auto) ensures iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
   padding: 2rem 1rem;
+  padding-top: max(2rem, env(safe-area-inset-top));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
 }
 
 #greeting-screen.hidden { display: none; }
@@ -189,9 +196,11 @@ body {
   margin-top: 1.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#continue-btn:hover {
+#continue-btn:hover, #continue-btn:active {
   transform: scale(1.06);
   box-shadow: 0 0 50px rgba(59, 130, 246, 0.7);
 }
@@ -286,7 +295,7 @@ body {
 /* ─── CONTROLS ─── */
 #controls {
   position: absolute;
-  bottom: 2.5rem;
+  bottom: max(2.5rem, calc(1.5rem + env(safe-area-inset-bottom)));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -305,16 +314,19 @@ body {
   font-size: 1.3rem;
   cursor: pointer;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: background 0.2s, transform 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#controls button:hover {
+#controls button:hover, #controls button:active {
   background: rgba(192, 132, 252, 0.35);
   transform: scale(1.1);
 }
 
 #progress-bar-wrap {
-  width: 200px;
+  width: clamp(80px, 35vw, 200px); /* shrinks on small screens */
   height: 3px;
   background: rgba(255,255,255,0.15);
   border-radius: 3px;
@@ -331,8 +343,8 @@ body {
 /* ─── COUNTER ─── */
 #counter {
   position: absolute;
-  bottom: 1rem;
-  right: 1.5rem;
+  bottom: max(1rem, calc(0.5rem + env(safe-area-inset-bottom)));
+  right: max(1.5rem, calc(1rem + env(safe-area-inset-right)));
   font-size: 0.75rem;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.1em;
